@@ -1,0 +1,69 @@
+.app__header {
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+body {
+  background-color: #4568dc;
+  text-align: center;
+  color: #d7d7ef;
+  font-family: "Lato", sans-serif;
+}
+
+.dropzone {
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+}
+
+.file-list {
+  font-size: 1.1rem;
+  padding: 1rem;
+  font-weight: 300;
+  line-height: 1.4;
+}
+
+.file-dropzone {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 1rem;
+  border: 1px dashed rgba(255, 255, 255, 0.4);
+  border-radius: 3px;
+  transition: 0.2s;
+  cursor: pointer;
+}
+.isActive {
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.fake-btn {
+  background-color: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(187, 87, 87, 0.1);
+  border-radius: 3px;
+  padding: 8px 15px;
+  margin-right: 0.4rem;
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+
+.file-dropzone__text {
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.file-dropzone__error {
+  font-weight: bold;
+  font-size: 1.5rem;
+  padding: 0.4rem;
+  margin: 0.6rem;
+  border: 2px solid;
+}
+
+h1 {
+  margin: 50px 0;
+}
