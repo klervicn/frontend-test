@@ -14,25 +14,36 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-evenly;
+  flex-direction: column;
 }
 
-.file-list {
-  font-size: 1.1rem;
+.dropzone__count {
+  margin-bottom: 0.3rem;
+  width: 70%;
+  text-align: right;
+}
+
+.file-display {
+  font-size: 1.3rem;
+  width: 70%;
   padding: 1rem;
   font-weight: 300;
   line-height: 1.4;
+  text-overflow: ellipsis;
 }
 
 .file-dropzone {
   position: relative;
   display: flex;
   align-items: center;
-  padding: 1rem;
-  border: 1px dashed rgba(255, 255, 255, 0.4);
+  border: 2px dashed rgba(255, 255, 255, 0.4);
   border-radius: 3px;
   transition: 0.2s;
   cursor: pointer;
+  justify-content: center;
+  width: 70%;
 }
+
 .isActive {
   background-color: rgba(255, 255, 255, 0.05);
 }
@@ -43,12 +54,12 @@ body {
   border-radius: 3px;
   padding: 8px 15px;
   margin-right: 0.4rem;
-  font-size: 1rem;
+  font-size: 1.2rem;
   text-transform: uppercase;
 }
 
-.file-dropzone__text {
-  font-size: 1rem;
+.file-dropzone__content__text {
+  font-size: 1.2rem;
   font-weight: 300;
   line-height: 1.4;
   white-space: nowrap;
@@ -56,14 +67,12 @@ body {
   text-overflow: ellipsis;
 }
 
-.file-dropzone__error {
-  font-weight: bold;
-  font-size: 1.5rem;
+.file-dropzone__info {
   padding: 0.4rem;
   margin: 0.6rem;
-  border: 2px solid;
 }
-
-h1 {
-  margin: 50px 0;
+.file-dropzone__error {
+  font-size: 1.5rem;
+  border: 2px solid;
+  font-weight: bold;
 }

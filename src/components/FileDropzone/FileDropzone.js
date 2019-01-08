@@ -10,55 +10,69 @@ class FileDropzone extends React.Component {
       errorMessage: null,
       filename: null,
       loading: false,
+      filesTotal: null,
       uploaded: false
     };
+    this.onDrop = this.onDrop.bind(this);
   }
 
   //Don't need to bind this function with this writing
-  onDrop = (acceptedFiles, rejectedFiles) => {
+  async onDrop(acceptedFiles, rejectedFiles) {
     // Show loading and remove old file
-    this.setState({ loading: true, filename: null });
+    this.setState({
+      loading: true,
+      filename: null,
+      filesTotal: null,
+      error: false,
+      errorMessage: null,
+      uploaded: false
+    });
     // If there is more than one file, display an error message and empty the dropzone
     if (rejectedFiles.length > 0 || acceptedFiles.length === 0) {
       this.setState({
         error: true,
         errorMessage: "Please drop only ONE file",
-        filename: null,
         loading: false
       });
     } else {
       // Send file to the server
-      fetch("https://fhirtest.uhn.ca/baseDstu3/Binary", {
-        method: "POST",
-        body: acceptedFiles[0]
-      }).then(response => {
-        // Success
-        if (response.status === 200 || response.status === 201) {
-          this.setState({
-            error: false,
-            errorMessage: null,
-            filename: acceptedFiles[0].name,
-            loading: false,
-            uploaded: true
-          });
-        } else {
-          // Error
-          this.setState({
-            error: true,
-            errorMessage: "File not uploaded, server error",
-            filename: null,
-            loading: false,
-            uploaded: false
-          });
-        }
-      });
+      try {
+        await fetch("https://fhirtest.uhn.ca/baseDstu3/Binary", {
+          method: "POST",
+          body: acceptedFiles[0]
+        });
+        // Find total number of binaries
+        const data = await fetch(
+          "http://hapi.fhir.org/baseDstu3/Binary?_pretty=true&_summary=count"
+        );
+        const { total } = await data.json();
+        this.setState({
+          filename: acceptedFiles[0].name,
+          filesTotal: total,
+          loading: false,
+          uploaded: true
+        });
+      } catch {
+        // Error
+        this.setState({
+          error: true,
+          errorMessage: "File not uploaded, server error",
+          loading: false
+        });
+      }
     }
-  };
+  }
 
   render() {
-    const { filename, error, errorMessage, loading } = this.state;
+    const { filename, error, errorMessage, loading, filesTotal } = this.state;
     return (
       <div className="dropzone">
+        {filesTotal !== null ? (
+          <p className="dropzone__count">
+            Total number of files on the server : {filesTotal}
+          </p>
+        ) : null}
+
         <Dropzone onDrop={this.onDrop} multiple={false}>
           {({ getRootProps, getInputProps, isDragActive }) => {
             return (
@@ -67,18 +81,23 @@ class FileDropzone extends React.Component {
                 className={`file-dropzone${isDragActive ? " isActive" : ""}`}
               >
                 <input {...getInputProps()} />
-                <p>
-                  <span className="fake-btn">Choose file </span>
-                  <span className="file-dropzone__text">
-                    or drop your file here
-                  </span>
-                </p>
+                <div className="file-dropzone_content">
+                  <p className="file-dropzone__content__text">
+                    Drop your file here
+                  </p>
+                  <p className="file-dropzone__content__text">or</p>
+                  <p className="fake-btn">Choose file </p>
+                </div>
               </div>
             );
           }}
         </Dropzone>
-        {loading ? <span>Loading...</span> : null}
-        {error ? <p className="file-dropzone__error">{errorMessage}</p> : null}
+        {loading ? <p className="file-dropzone__info">Loading...</p> : null}
+        {error ? (
+          <p className="file-dropzone__info file-dropzone__error">
+            {errorMessage}
+          </p>
+        ) : null}
         {filename ? <FileDisplay filename={filename} /> : null}
       </div>
     );
