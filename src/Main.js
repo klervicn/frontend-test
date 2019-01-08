@@ -8,6 +8,7 @@ class Main extends Component {
       <div className="main">
         <header className="main__header">
           <h1>Droptor</h1>
+          <h3>Upload your file</h3>
         </header>
         <FileDropzone />
       </div>
