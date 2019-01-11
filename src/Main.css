@@ -76,3 +76,7 @@ body {
   border: 2px solid;
   font-weight: bold;
 }
+
+.main {
+  min-width: 15rem;
+}
