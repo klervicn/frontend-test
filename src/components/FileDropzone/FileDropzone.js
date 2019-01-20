@@ -1,6 +1,9 @@
 import React from "react";
 import Dropzone from "react-dropzone";
 import FileDisplay from "../FileDisplay/FileDisplay";
+// require doesnt work in browser , because require is from webpack and not from electron
+const electron = window.require("electron");
+const ipcRenderer = electron.ipcRenderer;
 
 class FileDropzone extends React.Component {
   constructor() {
@@ -9,31 +12,71 @@ class FileDropzone extends React.Component {
       error: false,
       errorMessage: null,
       filename: null,
-      loading: false,
-      filesTotal: null,
-      uploaded: false
+      filesTotal: null
     };
     this.onDrop = this.onDrop.bind(this);
   }
 
-  //Don't need to bind this function with this writing
-  async onDrop(acceptedFiles, rejectedFiles) {
-    // Show loading and remove old file
+  onServerStateChanged = (event, { filename, filesTotal }) => {
     this.setState({
-      loading: true,
-      filename: null,
-      filesTotal: null,
+      filesTotal,
+      filename,
       error: false,
-      errorMessage: null,
-      uploaded: false
+      errorMessage: null
     });
+  };
+
+  onError = (event, { errorMessage }) => {
+    this.setState({
+      error: true,
+      errorMessage,
+      filename: null,
+      filesTotal: null
+    });
+  };
+
+  // Add listeners
+  componentDidMount() {
+    ipcRenderer.on("serverStateChanged", this.onServerStateChanged);
+    ipcRenderer.on("error", this.onError);
+  }
+
+  // Remove listeners
+  componentWillUnmount() {
+    ipcRenderer.removeListener("serverStateChanged", this.onServerStateChanged);
+    ipcRenderer.removeListener("error", this.onError);
+  }
+
+  async onDrop(acceptedFiles, rejectedFiles) {
     // If there is more than one file, display an error message and empty the dropzone
     if (rejectedFiles.length > 0 || acceptedFiles.length === 0) {
       this.setState({
         error: true,
         errorMessage: "Please drop only ONE file",
-        loading: false
+        filename: null,
+        filesTotal: null
       });
+      return;
+    }
+    // Check if file is PDF
+    if (!acceptedFiles[0].name.endsWith(".pdf")) {
+      this.setState({
+        error: true,
+        errorMessage: "Only PDF file is accepted",
+        filename: null,
+        filesTotal: null
+      });
+      return;
+    }
+    // Check file size
+    if (acceptedFiles[0].size / 1000000 > 2) {
+      this.setState({
+        error: true,
+        errorMessage: "File cannot exceed 2 mb",
+        filename: null,
+        filesTotal: null
+      });
+      return;
     } else {
       // Send file to the server
       try {
@@ -47,31 +90,31 @@ class FileDropzone extends React.Component {
         );
         const { total } = await data.json();
         this.setState({
+          error: false,
+          errorMessage: null,
           filename: acceptedFiles[0].name,
-          filesTotal: total,
-          loading: false,
-          uploaded: true
+          filesTotal: total
         });
-      } catch {
-        // Error
+      } catch (error) {
         this.setState({
           error: true,
-          errorMessage: "File not uploaded, server error",
-          loading: false
+          errorMessage: error.toString(),
+          filename: null,
+          filesTotal: null
         });
       }
     }
   }
 
   render() {
-    const { filename, error, errorMessage, loading, filesTotal } = this.state;
+    const { filename, error, errorMessage, filesTotal } = this.state;
     return (
       <div className="dropzone">
-        {filesTotal !== null ? (
+        {filesTotal && (
           <p className="dropzone__count">
             Total number of files on the server : {filesTotal}
           </p>
-        ) : null}
+        )}
 
         <Dropzone onDrop={this.onDrop} multiple={false}>
           {({ getRootProps, getInputProps, isDragActive }) => {
@@ -92,13 +135,12 @@ class FileDropzone extends React.Component {
             );
           }}
         </Dropzone>
-        {loading ? <p className="file-dropzone__info">Loading...</p> : null}
-        {error ? (
+        {error && (
           <p className="file-dropzone__info file-dropzone__error">
             {errorMessage}
           </p>
-        ) : null}
-        {filename ? <FileDisplay filename={filename} /> : null}
+        )}
+        {filename && <FileDisplay filename={filename} />}
       </div>
     );
   }
